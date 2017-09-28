@@ -9,7 +9,7 @@ from devito.dimension import x, y
 from devito.logger import error
 
 __all__ = ['first_derivative', 'second_derivative', 'cross_derivative',
-           'left', 'right', 'centered']
+           'generic_derivative', 'left', 'right', 'centered']
 
 
 class Transpose(object):
@@ -190,3 +190,22 @@ def first_derivative(*args, **kwargs):
             var = [a.subs({dim: ind[i]}) for a in args]
             deriv += c[i] * reduce(mul, var, 1)
     return matvec._transpose*deriv
+
+
+def generic_derivative(function, order, dim, width):
+    """
+    Create generic arbitrary order derivative expression from a
+    single :class:`Function` object. This methods is essentially a
+    dedicated wrapper around SymPy's `as_finite_diff` utility for
+    :class:`devito.Function` objects.
+
+    :param function: The symbol representing a function.
+    :param order: Derivative order, eg. 2 for a second derivative.
+    :param dim: The dimension for which to take the derivative.
+    :param width: Order of the coefficient discretization and thus
+                  width of the resulting stencil expression.
+    """
+
+    deriv = function.diff(*(tuple(dim for _ in range(order))))
+    indices = [(dim + i * dim.spacing) for i in range(-width, width + 1)]
+    return deriv.as_finite_difference(indices)
