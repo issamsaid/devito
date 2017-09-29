@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+from conftest import skipif_yask
 
 from devito.cgen_utils import FLOAT
 from devito import Operator, DenseData, PointData, x, y, z
@@ -32,6 +33,7 @@ def points(ranges, npoints, name='points'):
     return points
 
 
+@skipif_yask
 @pytest.mark.parametrize('shape, coords', [
     ((11, 11), [(.05, .9), (.01, .8)]),
     ((11, 11, 11), [(.05, .9), (.01, .8), (0.07, 0.84)])
@@ -52,6 +54,7 @@ def test_interpolate(shape, coords, npoints=20):
     assert np.allclose(p.data[0, :], xcoords, rtol=1e-6)
 
 
+@skipif_yask
 @pytest.mark.parametrize('shape, coords, result', [
     ((11, 11), [(.05, .95), (.45, .45)], 1.),
     ((11, 11, 11), [(.05, .95), (.45, .45), (.45, .45)], 0.5)
@@ -75,6 +78,7 @@ def test_inject(shape, coords, result, npoints=19):
     assert np.allclose(a.data[indices], result, rtol=1.e-5)
 
 
+@skipif_yask
 @pytest.mark.parametrize('shape, coords, result', [
     ((11, 11), [(.05, .95), (.45, .45)], 1.),
     ((11, 11, 11), [(.05, .95), (.45, .45), (.45, .45)], 0.5)
@@ -99,6 +103,7 @@ def test_inject_from_field(shape, coords, result, npoints=19):
     assert np.allclose(a.data[indices], result, rtol=1.e-5)
 
 
+@skipif_yask
 @pytest.mark.parametrize('shape, coords', [
     ((11, 11), [(.05, .9), (.01, .8)]),
     ((11, 11, 11), [(.05, .9), (.01, .8), (0.07, 0.84)])

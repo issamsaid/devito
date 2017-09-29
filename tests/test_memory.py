@@ -1,8 +1,10 @@
 from devito import DenseData
 import pytest
 import numpy as np
+from conftest import skipif_yask
 
 
+@skipif_yask
 @pytest.mark.parametrize('shape', [(20, 20), (20, 20, 20), (20, 20, 20, 20)])
 def test_first_touch(shape):
     m = DenseData(name='m', shape=shape, first_touch=True)

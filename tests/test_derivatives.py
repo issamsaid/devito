@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+from conftest import skipif_yask
 from sympy import Derivative, as_finite_diff, simplify
 
 from devito import DenseData, TimeData, t, x, y, z
@@ -10,6 +11,7 @@ def shape(xdim=20, ydim=30):
     return (xdim, ydim)
 
 
+@skipif_yask
 @pytest.mark.parametrize('SymbolType, dimension', [
     (DenseData, x), (DenseData, y),
     (TimeData, x), (TimeData, y), (TimeData, t),
@@ -34,6 +36,7 @@ def test_stencil_derivative(shape, SymbolType, dimension):
     assert(np.allclose(u_dxx.data, 66.6))
 
 
+@skipif_yask
 @pytest.mark.parametrize('SymbolType, derivative, dim', [
     (DenseData, 'dx2', 3), (DenseData, 'dy2', 3),
     (TimeData, 'dx2', 3), (TimeData, 'dy2', 3), (TimeData, 'dt', 2)
@@ -45,6 +48,7 @@ def test_preformed_derivatives(shape, SymbolType, derivative, dim):
     assert(len(expr.args) == dim)
 
 
+@skipif_yask
 @pytest.mark.parametrize('derivative, dimension', [
     ('dx', x), ('dy', y), ('dz', z)
 ])
@@ -65,6 +69,7 @@ def test_derivatives_space(derivative, dimension, order):
     assert(expr == s_expr)  # Exact equailty
 
 
+@skipif_yask
 @pytest.mark.parametrize('derivative, dimension', [
     ('dx2', x), ('dy2', y), ('dz2', z)
 ])

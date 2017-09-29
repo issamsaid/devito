@@ -2,6 +2,7 @@ from conftest import EVAL
 
 import numpy as np
 import pytest
+from conftest import skipif_yask
 from sympy import Eq  # noqa
 
 from devito.dse import (clusterize, rewrite, xreplace_constrained, iq_timeinvariant,
@@ -52,6 +53,7 @@ def run_acoustic_forward(dse=None):
     return u, rec
 
 
+@skipif_yask
 def test_acoustic_rewrite_basic():
     ret1 = run_acoustic_forward(dse=None)
     ret2 = run_acoustic_forward(dse='basic')
@@ -101,6 +103,7 @@ def tti_nodse():
     return v, rec
 
 
+@skipif_yask
 def test_tti_clusters_to_graph():
     solver = tti_operator()
 
@@ -123,6 +126,7 @@ def test_tti_clusters_to_graph():
     assert all(v.reads or v.readby for v in graph.values())
 
 
+@skipif_yask
 def test_tti_rewrite_basic(tti_nodse):
     operator = tti_operator(dse='basic')
     rec, u, v, _ = operator.forward()
@@ -131,6 +135,7 @@ def test_tti_rewrite_basic(tti_nodse):
     assert np.allclose(tti_nodse[1].data, rec.data, atol=10e-3)
 
 
+@skipif_yask
 def test_tti_rewrite_advanced(tti_nodse):
     operator = tti_operator(dse='advanced')
     rec, u, v, _ = operator.forward()
@@ -139,6 +144,7 @@ def test_tti_rewrite_advanced(tti_nodse):
     assert np.allclose(tti_nodse[1].data, rec.data, atol=10e-1)
 
 
+@skipif_yask
 def test_tti_rewrite_speculative(tti_nodse):
     operator = tti_operator(dse='speculative')
     rec, u, v, _ = operator.forward()
@@ -147,6 +153,7 @@ def test_tti_rewrite_speculative(tti_nodse):
     assert np.allclose(tti_nodse[1].data, rec.data, atol=10e-1)
 
 
+@skipif_yask
 def test_tti_rewrite_aggressive(tti_nodse):
     operator = tti_operator(dse='aggressive')
     rec, u, v, _ = operator.forward()
@@ -157,6 +164,7 @@ def test_tti_rewrite_aggressive(tti_nodse):
 
 # DSE manipulation
 
+@skipif_yask
 @pytest.mark.parametrize('exprs,expected', [
     # simple
     (['Eq(ti1, 4.)', 'Eq(ti0, 3.)', 'Eq(tu, ti0 + ti1 + 5.)'],
@@ -181,6 +189,7 @@ def test_xreplace_constrained_time_invariants(tu, tv, tw, ti0, ti1, t0, t1,
     assert all(str(i.rhs) == j for i, j in zip(found, expected))
 
 
+@skipif_yask
 @pytest.mark.parametrize('exprs,expected', [
     # simple
     (['Eq(ti0, 3.)', 'Eq(tv, 2.4)', 'Eq(tu, tv + 5. + ti0)'],
@@ -206,6 +215,7 @@ def test_xreplace_constrained_time_varying(tu, tv, tw, ti0, ti1, t0, t1,
     assert all(str(i.rhs) == j for i, j in zip(found, expected))
 
 
+@skipif_yask
 @pytest.mark.parametrize('exprs,expected', [
     # simple
     (['Eq(tu, (tv + tw + 5.)*(ti0 + ti1) + (t0 + t1)*(ti0 + ti1))'],
@@ -226,6 +236,7 @@ def test_common_subexprs_elimination(tu, tv, tw, ti0, ti1, t0, t1, exprs, expect
     assert all(str(i.rhs) == j for i, j in zip(processed, expected))
 
 
+@skipif_yask
 @pytest.mark.parametrize('exprs,expected', [
     (['Eq(t0, 3.)', 'Eq(t1, 7.)', 'Eq(ti0, t0*3. + 2.)', 'Eq(ti1, t1 + t0 + 1.5)',
       'Eq(tv, (ti0 + ti1)*t0)', 'Eq(tw, (ti0 + ti1)*t1)',
@@ -240,6 +251,7 @@ def test_graph_trace(tu, tv, tw, ti0, ti1, t0, t1, exprs, expected):
         assert set([j.lhs for j in g.trace(i)]) == mapper[i]
 
 
+@skipif_yask
 @pytest.mark.parametrize('exprs,expected', [
     # trivial
     (['Eq(t0, 1.)', 'Eq(t1, fa[x] + fb[x])'],
@@ -264,6 +276,7 @@ def test_graph_isindex(fa, fb, fc, t0, t1, t2, exprs, expected):
         assert g.is_index(k) == v
 
 
+@skipif_yask
 @pytest.mark.parametrize('exprs,expected', [
     # none (different distance)
     (['Eq(t0, fa[x] + fb[x])', 'Eq(t1, fa[x+1] + fb[x])'],
@@ -298,6 +311,7 @@ def test_collect_aliases(fa, fb, fc, fd, t0, t1, t2, t3, exprs, expected):
         assert (len(v.aliased) == 1 and mapper[k] is None) or v.anti_stencil == mapper[k]
 
 
+@skipif_yask
 @pytest.mark.parametrize('expr,expected', [
     ('Eq(t0, t1)', 0),
     ('Eq(t0, fa[x] + fb[x])', 1),

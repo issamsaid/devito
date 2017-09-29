@@ -4,6 +4,7 @@ from functools import reduce
 from operator import mul
 import numpy as np
 import pytest
+from conftest import skipif_yask
 from sympy import Eq, solve
 
 from conftest import EVAL
@@ -156,6 +157,7 @@ def _new_operator3(shape, time_order, **kwargs):
     return u.data[1, :], op
 
 
+@skipif_yask
 def test_create_elemental_functions_simple(simple_function):
     roots = [i[-1] for i in retrieve_iteration_tree(simple_function)]
     retagged = [i._rebuild(properties=tagger(0)) for i in roots]
@@ -200,6 +202,7 @@ void f_0(const int k_start, const int k_finish,"""
 }""")
 
 
+@skipif_yask
 def test_create_elemental_functions_complex(complex_function):
     roots = [i[-1] for i in retrieve_iteration_tree(complex_function)]
     retagged = [j._rebuild(properties=tagger(i)) for i, j in enumerate(roots)]
@@ -266,6 +269,7 @@ void f_2(const int q_start, const int q_finish,"""
 }""")
 
 
+@skipif_yask
 @pytest.mark.parametrize("blockinner,expected", [
     (False, 4),
     (True, 8)
@@ -296,6 +300,7 @@ def test_cache_blocking_structure(blockinner, expected):
         assert 'omp for' in outermost.pragmas[0].value
 
 
+@skipif_yask
 @pytest.mark.parametrize("shape", [(10,), (10, 45), (10, 31, 45)])
 @pytest.mark.parametrize("blockshape", [2, 7, (3, 3), (2, 9, 1)])
 @pytest.mark.parametrize("blockinner", [False, True])
@@ -308,6 +313,7 @@ def test_cache_blocking_no_time_loop(shape, blockshape, blockinner):
     assert np.equal(wo_blocking.data, w_blocking.data).all()
 
 
+@skipif_yask
 @pytest.mark.parametrize("shape", [(20, 33), (45, 31, 45)])
 @pytest.mark.parametrize("time_order", [2])
 @pytest.mark.parametrize("blockshape", [2, (13, 20), (11, 15, 23)])
@@ -321,6 +327,7 @@ def test_cache_blocking_time_loop(shape, time_order, blockshape, blockinner):
     assert np.equal(wo_blocking.data, w_blocking.data).all()
 
 
+@skipif_yask
 @pytest.mark.parametrize("shape,blockshape", [
     ((25, 25, 46), (None, None, None)),
     ((25, 25, 46), (7, None, None)),
@@ -344,6 +351,7 @@ def test_cache_blocking_edge_cases(shape, blockshape):
     assert np.equal(wo_blocking.data, w_blocking.data).all()
 
 
+@skipif_yask
 @pytest.mark.parametrize("shape,blockshape", [
     ((3, 3), (3, 4)),
     ((4, 4), (3, 4)),
@@ -368,6 +376,7 @@ def test_cache_blocking_edge_cases_highorder(shape, blockshape):
     assert np.equal(wo_blocking.data, w_blocking.data).all()
 
 
+@skipif_yask
 @pytest.mark.parametrize('exprs,expected', [
     # trivial 1D
     (['Eq(fa[x], fa[x] + fb[x])'],
@@ -426,6 +435,7 @@ def test_loops_ompized(fa, fb, fc, fd, t0, t1, t2, t3, exprs, expected, iters):
                 assert 'omp for' not in k.value
 
 
+@skipif_yask
 def test_loop_nofission(simple_function):
     old = Rewriter.thresholds['min_fission'], Rewriter.thresholds['max_fission']
     Rewriter.thresholds['max_fission'], Rewriter.thresholds['min_fission'] = 0, 1
@@ -445,6 +455,7 @@ def test_loop_nofission(simple_function):
     Rewriter.thresholds['min_fission'], Rewriter.thresholds['max_fission'] = old
 
 
+@skipif_yask
 def test_loop_fission(simple_function_fissionable):
     old = Rewriter.thresholds['min_fission'], Rewriter.thresholds['max_fission']
     Rewriter.thresholds['max_fission'], Rewriter.thresholds['min_fission'] = 0, 1
@@ -467,6 +478,7 @@ def test_loop_fission(simple_function_fissionable):
     Rewriter.thresholds['min_fission'], Rewriter.thresholds['max_fission'] = old
 
 
+@skipif_yask
 def test_padding(simple_function_with_paddable_arrays):
     handle = transform(simple_function_with_paddable_arrays, mode='padding')
     assert str(handle.nodes[0].ccode) == """\
@@ -492,6 +504,7 @@ for (int i = 0; i < 3; i += 1)
 }"""
 
 
+@skipif_yask
 @pytest.mark.parametrize("shape", [(41,), (20, 33), (45, 31, 45)])
 def test_composite_transformation(shape):
     wo_blocking, _ = _new_operator1(shape, dle='noop')
